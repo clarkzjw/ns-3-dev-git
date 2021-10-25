@@ -2,3 +2,7 @@
 */doc/source/figures/*.eps
 */doc/source/figures/*.pdf
 */doc/*.png
+
+# Ignore the quic repo since it will be edited independently
+quic/
+
