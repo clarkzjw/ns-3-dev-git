@@ -38,3 +38,6 @@ build/
 /.project
 
 version.cache
+
+# DASH
+dash-log-files/
