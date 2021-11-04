@@ -5,20 +5,34 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(gdb) Launch from scratch",
+            "name": "(gdb) Pipe launch (festive)",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/scratch/${fileBasenameNoExtension}",
-            "args": [],
+            "program": "${workspaceFolder}/build/scratch/simple-tcp-streaming",
+            "args": [
+                "--segmentSizeFile=contrib/dash/segmentSizes.txt",
+                "--segmentDuration=2000000",
+                "--adaptationAlgo=festive",       // Change this to use different adaptation algorithms
+                "--simulationId=1"                // Make sure to move the logs generated from debug sessions if desired.
+            ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
-            "environment": [
-                {
-                    "name": "LD_LIBRARY_PATH",
-                    "value": "./build/lib/"
-                }
-            ],
-            "externalConsole": true,
+            "environment": [],
+            "externalConsole": false,
+            "pipeTransport": {
+                "debuggerPath": "",  // leave blank
+                "pipeProgram": "${workspaceFolder}/waf",
+                // pipeArgs is essentially the entire waf command line arguments                
+                "pipeArgs": [                    
+                    "--command-template", "\"",                 // opening double quote for command template 
+                    "${debuggerCommand}",                       // gdb path and --interpreter arg already in debuggerCommand 
+                    "--args", "%s",                             // Need to add --args %s to the gdb call
+                    "\"",                                       // closing quote for command template
+                    "--run", "simple-tcp-streaming",            // Run call with the filename
+                    ],
+                    "quoteArgs":false,
+                    "pipeCwd": ""
+            },
             "MIMode": "gdb",
             "setupCommands": [
                 {
@@ -27,6 +41,7 @@
                     "ignoreFailures": true
                 }
             ]
-         }
+        }
+
     ]
 }
