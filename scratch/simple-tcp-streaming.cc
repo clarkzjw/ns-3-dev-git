@@ -105,11 +105,11 @@ main (int argc, char *argv[])
   pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("5Mbps")); // Arbitrary; can be changed later.
   pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms")); // Arbitrary; can be changed later.
 
-  // TODO enable tracing so we can get a udp dump of what's happening
-  
-
   NetDeviceContainer netDevices;
   netDevices = pointToPoint.Install (nodes);
+
+  // Enable packet capture
+  pointToPoint.EnablePcap("dash-tracing", nodes, true);
 
   // Install QUIC stack on client and server nodes
   QuicHelper stack;
