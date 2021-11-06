@@ -40,7 +40,7 @@ using namespace ns3;
 NS_LOG_COMPONENT_DEFINE ("SimpleTcpStreaming");
 
 // Create folder for client log files
-void
+std::string
 createLoggingFolder(const std::string& adaptationAlgo, int simulationId) { 
   const char * mylogsDir = dashLogDirectory.c_str();
   mkdir (mylogsDir, 0775);
@@ -52,6 +52,8 @@ createLoggingFolder(const std::string& adaptationAlgo, int simulationId) {
   std::string dirstr (algodirstr + "/" + std::to_string(simulationId) + "/");
   const char * dir = dirstr.c_str();
   mkdir(dir, 0775);
+
+  return dirstr;
 }
 
 int
@@ -81,7 +83,7 @@ main (int argc, char *argv[])
   cmd.AddValue ("segmentSizeFile", "The relative path (from ns-3.x directory) to the file containing the segment sizes in bytes", segmentSizeFilePath);
   cmd.Parse (argc, argv);
 
-  createLoggingFolder(adaptationAlgo, simulationId);
+  auto loggingFolder = createLoggingFolder(adaptationAlgo, simulationId);
 
   // TODO Set similar buffer size parameters for TCP and QUIC
   // Config::SetDefault("ns3::TcpSocket::SegmentSize", UintegerValue (1446));
@@ -109,7 +111,8 @@ main (int argc, char *argv[])
   netDevices = pointToPoint.Install (nodes);
 
   // Enable packet capture
-  pointToPoint.EnablePcap("dash-tracing", nodes, true);
+  std::string pcapPrefix = loggingFolder + "dash-tracing";
+  pointToPoint.EnablePcap(pcapPrefix, nodes, true);
 
   // Install QUIC stack on client and server nodes
   QuicHelper stack;
