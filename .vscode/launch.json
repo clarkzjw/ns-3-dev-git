@@ -9,11 +9,11 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/scratch/simple-tcp-streaming",
-            "args": [
-                "--segmentSizeFile=contrib/dash/segmentSizes.txt",
-                "--segmentDuration=2000000",
-                "--adaptationAlgo=festive",       // Change this to use different adaptation algorithms
-                "--simulationId=1"                // Make sure to move the logs generated from debug sessions if desired.
+            "args": [ // Change these to debug specific cases without recompiling
+                "--simulationId=1",               
+                "--adaptationAlgo=festive",
+                "--dataRate=5Mbps",
+                "--pacingEnabled=false"               
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

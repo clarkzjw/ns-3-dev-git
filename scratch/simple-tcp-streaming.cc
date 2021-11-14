@@ -59,30 +59,64 @@ createLoggingFolder(const std::string& adaptationAlgo, int simulationId) {
 int
 main (int argc, char *argv[])
 {
-  // Enable logging
+  // Logging setup
+  LogComponentEnableAll (LOG_PREFIX_NODE);  // Prefix log messages with node id (0 for client, 1 for server)
+  LogComponentEnableAll (LOG_PREFIX_FUNC);  // Prefix the function name before each log message
+  LogComponentEnableAll (LOG_PREFIX_TIME);  // Prefix log messages with a timestamp
+  LogComponentEnableAll (LOG_PREFIX_LEVEL); // Prefix log messages with their severity level
+  // LogComponentEnableAll (LOG_PREFIX_ALL);
+
+  LogComponentEnableAll (LOG_WARN);
+
   LogComponentEnable ("SimpleTcpStreaming", LOG_LEVEL_LOGIC);
   LogComponentEnable ("TcpStreamClientApplication", LOG_LEVEL_LOGIC);
   LogComponentEnable ("TcpStreamServerApplication", LOG_LEVEL_LOGIC);
-  LogComponentEnable ("QuicSocketBase", LOG_LEVEL_WARN);
-  LogComponentEnable ("QuicStreamBase", LOG_LEVEL_DEBUG); // TODO make this warn level instead
-  LogComponentEnable ("QuicStreamTxBuffer", LOG_LEVEL_WARN);
-  LogComponentEnable ("QuicStreamRxBuffer", LOG_LEVEL_WARN);
+  LogComponentEnable ("QuicSocketBase", LOG_LEVEL_FUNCTION);
+  LogComponentEnable ("QuicSocketTxBuffer", LOG_LEVEL_INFO);
+  LogComponentEnable ("QuicCongestionControl", LOG_LEVEL_LOGIC);
+
+  LogComponentEnable ("QuicSocketTxScheduler", LOG_LEVEL_INFO);
+  // LogComponentEnable ("QuicSocketRxBuffer", LOG_LEVEL_INFO);
+  LogComponentEnable ("QuicStreamBase", LOG_LEVEL_INFO);
+  LogComponentEnable ("QuicStreamTxBuffer", LOG_LEVEL_INFO);
+  // LogComponentEnable ("QuicStreamRxBuffer", LOG_LEVEL_INFO);
   // LogComponentEnable ("QuicL5Protocol", LOG_LEVEL_INFO);
+  // LogComponentEnable ("QuicL4Protocol", LOG_LEVEL_INFO);
+  LogComponentEnable ("QuicSubheader", LOG_LEVEL_INFO);
   
   // Command-line parameters
-  uint64_t segmentDuration;
+  uint64_t segmentDuration {2000000};
   uint32_t simulationId;
   std::string adaptationAlgo;
-  std::string segmentSizeFilePath;
+  std::string segmentSizeFilePath {"contrib/dash/segmentSizes.txt"};
+
+  bool pacingEnabled;
+  std::string pacingRate;
+  std::string dataRate;
 
   CommandLine cmd;
-  cmd.Usage ("Simulation of streaming with DASH over TCP.\n");
+  cmd.Usage ("Simulation of streaming with DASH over QUIC.\n");
   cmd.AddValue ("simulationId", "The simulation's index (for logging purposes)", simulationId);
-  cmd.AddValue ("segmentDuration", "The duration of a video segment in microseconds", segmentDuration);
   cmd.AddValue ("adaptationAlgo", "The adaptation algorithm that the client uses for the simulation", adaptationAlgo);
-  cmd.AddValue ("segmentSizeFile", "The relative path (from ns-3.x directory) to the file containing the segment sizes in bytes", segmentSizeFilePath);
+
+  // New parameters used for testing
+  cmd.AddValue ("dataRate", "The data rate of the link connecting the client and server. E.g. 1Mbps", dataRate);
+  cmd.AddValue ("pacingEnabled", "true if pacing should be enabled. If enabled, pacing rate equals data rate.", pacingEnabled);
+
+  // Old parameters from the original script removed for convenience
+  // cmd.AddValue ("segmentSizeFile", "The relative path (from ns-3.x directory) to the file containing the segment sizes in bytes", segmentSizeFilePath);
+  // cmd.AddValue ("segmentSizeFile", "The relative path (from ns-3.x directory) to the file containing the segment sizes in bytes", segmentSizeFilePath);
+
   cmd.Parse (argc, argv);
 
+  NS_LOG_UNCOND("\n##### Simulation Config #####");
+  NS_LOG_UNCOND("Simulation ID  : " << simulationId);
+  NS_LOG_UNCOND("ABR Algorithm  : " << adaptationAlgo);
+  NS_LOG_UNCOND("Data Rate      : " << dataRate);
+  NS_LOG_UNCOND("Pacing Enabled : " << (pacingEnabled ? "True" : "False"));
+  NS_LOG_UNCOND("Segment File   : " << segmentSizeFilePath);
+  NS_LOG_UNCOND("##### ##### ##### ##### #####\n");
+  
   auto loggingFolder = createLoggingFolder(adaptationAlgo, simulationId);
 
   // TODO Set similar buffer size parameters for TCP and QUIC
@@ -90,11 +124,20 @@ main (int argc, char *argv[])
   // Config::SetDefault("ns3::TcpSocket::SndBufSize", UintegerValue (524288));
   // Config::SetDefault("ns3::TcpSocket::RcvBufSize", UintegerValue (524288));
 
-  // Stolen from QUIC example.
+  Config::SetDefault ("ns3::QuicSocketBase::MaxPacketSize", UintegerValue (1446)); // TODO Try making this larger to decrease the number of packets we have to look through
   Config::SetDefault ("ns3::QuicSocketBase::SocketRcvBufSize", UintegerValue (524288));
   Config::SetDefault ("ns3::QuicSocketBase::SocketSndBufSize", UintegerValue (524288));
   Config::SetDefault ("ns3::QuicStreamBase::StreamSndBufSize", UintegerValue (524288));
   Config::SetDefault ("ns3::QuicStreamBase::StreamRcvBufSize", UintegerValue (524288));
+  
+  // std::string dataRate = "5Mbps";
+
+  // Enable pacing to see if it prevents the weird loss issues we're seeing
+  // std::string pacingRate = "100Kbps"; // Very large to start with
+
+  if (pacingEnabled) {
+    Config::SetDefault ("ns3::TcpSocketState::EnablePacing", BooleanValue (true));    
+  }
 
   Time::SetResolution (Time::NS);
 
@@ -102,10 +145,25 @@ main (int argc, char *argv[])
   NodeContainer nodes;
   nodes.Create (2);
 
+  // Configure Error Rate
+  // double errorRate = 0.01;
+  // Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
+  // uv->SetStream (50);
+  // RateErrorModel error_model;
+  // error_model.SetRandomVariable (uv);
+  // error_model.SetUnit (RateErrorModel::ERROR_UNIT_PACKET);
+  // error_model.SetRate (errorRate);
+
   // A single p2p connection exists between the client and server
   PointToPointHelper pointToPoint;
-  pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("5Mbps")); // Arbitrary; can be changed later.
+  pointToPoint.SetDeviceAttribute ("DataRate", StringValue (dataRate)); // Arbitrary; can be changed later.
+  // pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("5Mbps")); // Arbitrary; can be changed later.
   pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms")); // Arbitrary; can be changed later.
+
+
+  // pointToPoint.SetDeviceAttribute ("ReceiveErrorModel", PointerValue (&error_model));
+
+
 
   NetDeviceContainer netDevices;
   netDevices = pointToPoint.Install (nodes);
