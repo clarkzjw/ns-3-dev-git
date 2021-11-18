@@ -4,3 +4,4 @@
 !subdir/
 !scratch-simulator.cc
 !simple-tcp-streaming.cc
+!mtu-streaming-issue-demo.cc
