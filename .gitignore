@@ -1,4 +1,5 @@
 *.diff
+
 *.orig
 *.patch
 *.rej
@@ -41,3 +42,5 @@ version.cache
 
 # DASH
 dash-log-files/
+bulk-run/
+logs/
