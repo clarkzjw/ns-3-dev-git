@@ -8,12 +8,13 @@
             "name": "(gdb) Pipe launch (festive)",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/scratch/quic-streaming",
+            "program": "${workspaceFolder}/build/scratch/dash-streaming",
             "args": [ // Change these to debug specific cases without recompiling
                 "--simulationId=1",               
                 "--adaptationAlgo=festive",
                 "--dataRate=5Mbps",
-                "--pacingEnabled=false"               
+                "--pacingEnabled=false",
+                "--transportProtocol=QUIC"               
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -28,7 +29,7 @@
                     "${debuggerCommand}",                       // gdb path and --interpreter arg already in debuggerCommand 
                     "--args", "%s",                             // Need to add --args %s to the gdb call
                     "\"",                                       // closing quote for command template
-                    "--run", "quic-streaming",            // Run call with the filename
+                    "--run", "dash-streaming",                  // Run call with the filename
                     ],
                     "quoteArgs":false,
                     "pipeCwd": ""
