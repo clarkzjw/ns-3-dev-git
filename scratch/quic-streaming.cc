@@ -14,7 +14,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-// This is a simple DASH streaming demo over TCP.
+// This is a simple DASH streaming demo over QUIC.
 // The simulation consists of a single client and a single server with 
 // a point-to-point link between them.
 //
@@ -37,7 +37,7 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE ("SimpleTcpStreaming");
+NS_LOG_COMPONENT_DEFINE ("QuicStreaming");
 
 // Create folder for client log files
 std::string
@@ -68,7 +68,7 @@ main (int argc, char *argv[])
 
   LogComponentEnableAll (LOG_WARN);
 
-  LogComponentEnable ("SimpleTcpStreaming", LOG_LEVEL_LOGIC);
+  LogComponentEnable ("QuicStreaming", LOG_LEVEL_LOGIC);
   LogComponentEnable ("TcpStreamClientApplication", LOG_LEVEL_LOGIC);
   LogComponentEnable ("TcpStreamServerApplication", LOG_LEVEL_LOGIC);
   LogComponentEnable ("QuicSocketBase", LOG_LEVEL_FUNCTION);
