@@ -44,3 +44,5 @@ version.cache
 dash-log-files/
 bulk-run/
 logs/
+
+logging-and-data/
