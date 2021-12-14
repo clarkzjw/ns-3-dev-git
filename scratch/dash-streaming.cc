@@ -104,6 +104,7 @@ main (int argc, char *argv[])
   bool pacingEnabled;
   std::string pacingRate;
   std::string dataRate;
+  double errorRate;
 
   CommandLine cmd;
   cmd.Usage ("Simulation of streaming with DASH over QUIC.\n");
@@ -112,6 +113,7 @@ main (int argc, char *argv[])
   cmd.AddValue ("transportProtocol", "The transport protocol used for streaming (QUIC or TCP)", transportProtocol);
   cmd.AddValue ("dataRate", "The data rate of the link connecting the client and server. E.g. 1Mbps", dataRate);
   cmd.AddValue ("pacingEnabled", "true if pacing should be enabled. If enabled, pacing rate equals data rate.", pacingEnabled);
+  cmd.AddValue ("errorRate", "The percentage of packets that should be lost, expressed as a double where 1 == 100%", errorRate);
 
   cmd.Parse (argc, argv);
 
@@ -122,6 +124,7 @@ main (int argc, char *argv[])
   NS_LOG_UNCOND("Protocol       : " << transportProtocol);
   NS_LOG_UNCOND("ABR Algorithm  : " << adaptationAlgo);
   NS_LOG_UNCOND("Data Rate      : " << dataRate);
+  NS_LOG_UNCOND("Error Rate     : " << errorRate);
   NS_LOG_UNCOND("Pacing Enabled : " << (pacingEnabled ? "True" : "False"));
   NS_LOG_UNCOND("Segment File   : " << segmentSizeFilePath);
   NS_LOG_UNCOND("##### ##### ##### ##### #####\n");
@@ -133,7 +136,7 @@ main (int argc, char *argv[])
   Config::SetDefault("ns3::TcpSocket::SndBufSize", UintegerValue (524288));
   Config::SetDefault("ns3::TcpSocket::RcvBufSize", UintegerValue (524288));
 
-  Config::SetDefault ("ns3::QuicSocketBase::MaxPacketSize", UintegerValue (1446)); // TODO Try making this larger to decrease the number of packets we have to look through
+  Config::SetDefault ("ns3::QuicSocketBase::MaxPacketSize", UintegerValue (1446)); // TODO Try making this smaller to see if we get less fragmentation?
   Config::SetDefault ("ns3::QuicSocketBase::SocketRcvBufSize", UintegerValue (524288));
   Config::SetDefault ("ns3::QuicSocketBase::SocketSndBufSize", UintegerValue (524288));
   Config::SetDefault ("ns3::QuicStreamBase::StreamSndBufSize", UintegerValue (524288));
@@ -149,24 +152,21 @@ main (int argc, char *argv[])
   NodeContainer nodes;
   nodes.Create (2);
 
-  // Configure Error Rate
-  // double errorRate = 0.01;
-  // Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
-  // uv->SetStream (50);
-  // RateErrorModel error_model;
-  // error_model.SetRandomVariable (uv);
-  // error_model.SetUnit (RateErrorModel::ERROR_UNIT_PACKET);
-  // error_model.SetRate (errorRate);
-
   // A single p2p connection exists between the client and server
   PointToPointHelper pointToPoint;
   pointToPoint.SetDeviceAttribute ("DataRate", StringValue (dataRate)); 
-  pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms")); // Arbitrary; can be changed later.
-
-  // pointToPoint.SetDeviceAttribute ("ReceiveErrorModel", PointerValue (&error_model));
+  pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms")); // TODO make this a parameter
 
   NetDeviceContainer netDevices;
   netDevices = pointToPoint.Install (nodes);
+
+  auto clientDevice = netDevices.Get(0);
+
+  // Configure Error (loss) Rate
+  Ptr<RateErrorModel> em = CreateObject<RateErrorModel> ();
+  em->SetRate (errorRate);
+  em->SetUnit(RateErrorModel::ERROR_UNIT_PACKET);
+  clientDevice->SetAttribute ("ReceiveErrorModel", PointerValue (em));
 
   // Enable packet capture
   std::string pcapPrefix = loggingFolder + "dash-tracing";
