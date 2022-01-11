@@ -77,21 +77,21 @@ main (int argc, char *argv[])
 
   LogComponentEnableAll (LOG_WARN);
 
-  LogComponentEnable ("DashStreaming", LOG_LEVEL_LOGIC);
-  LogComponentEnable ("StreamClientApplication", LOG_LEVEL_LOGIC);
-  LogComponentEnable ("StreamServerApplication", LOG_LEVEL_LOGIC);
-  LogComponentEnable ("QuicSocketBase", LOG_LEVEL_FUNCTION);
-  LogComponentEnable ("QuicSocketTxBuffer", LOG_LEVEL_INFO);
-  LogComponentEnable ("QuicCongestionControl", LOG_LEVEL_LOGIC);
+  // LogComponentEnable ("DashStreaming", LOG_LEVEL_LOGIC);
+  // LogComponentEnable ("StreamClientApplication", LOG_LEVEL_LOGIC);
+  // LogComponentEnable ("StreamServerApplication", LOG_LEVEL_LOGIC);
+  // LogComponentEnable ("QuicSocketBase", LOG_LEVEL_FUNCTION);
+  // LogComponentEnable ("QuicSocketTxBuffer", LOG_LEVEL_INFO);
+  // LogComponentEnable ("QuicCongestionControl", LOG_LEVEL_LOGIC);
 
-  LogComponentEnable ("QuicSocketTxScheduler", LOG_LEVEL_INFO);
-  // LogComponentEnable ("QuicSocketRxBuffer", LOG_LEVEL_INFO);
-  LogComponentEnable ("QuicStreamBase", LOG_LEVEL_INFO);
-  LogComponentEnable ("QuicStreamTxBuffer", LOG_LEVEL_INFO);
-  // LogComponentEnable ("QuicStreamRxBuffer", LOG_LEVEL_INFO);
-  // LogComponentEnable ("QuicL5Protocol", LOG_LEVEL_INFO);
-  // LogComponentEnable ("QuicL4Protocol", LOG_LEVEL_INFO);
-  LogComponentEnable ("QuicSubheader", LOG_LEVEL_INFO);
+  // LogComponentEnable ("QuicSocketTxScheduler", LOG_LEVEL_INFO);
+  // // LogComponentEnable ("QuicSocketRxBuffer", LOG_LEVEL_INFO);
+  // LogComponentEnable ("QuicStreamBase", LOG_LEVEL_INFO);
+  // LogComponentEnable ("QuicStreamTxBuffer", LOG_LEVEL_INFO);
+  // // LogComponentEnable ("QuicStreamRxBuffer", LOG_LEVEL_INFO);
+  // // LogComponentEnable ("QuicL5Protocol", LOG_LEVEL_INFO);
+  // // LogComponentEnable ("QuicL4Protocol", LOG_LEVEL_INFO);
+  // LogComponentEnable ("QuicSubheader", LOG_LEVEL_INFO);
   
   // Hard-coded simulation parameters
   uint64_t segmentDuration {2000000};
