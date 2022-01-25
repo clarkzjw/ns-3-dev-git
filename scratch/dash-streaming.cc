@@ -98,22 +98,23 @@ main (int argc, char *argv[])
   std::string segmentSizeFilePath {"contrib/dash/segmentSizes.txt"};
 
   // Command-line parameters
-  uint32_t simulationId;
-  std::string adaptationAlgo;
-  std::string transportProtocol;
-  bool pacingEnabled;
+  uint32_t simulationId=1;
+  std::string adaptationAlgo("festive");
+  std::string transportProtocol("QUIC");
+  bool pacingEnabled=false;
+  std::string dataRate("3Mbps");
+  double errorRate=0.02;
+
   std::string pacingRate;
-  std::string dataRate;
-  double errorRate;
 
   CommandLine cmd;
   cmd.Usage ("Simulation of streaming with DASH over QUIC.\n");
-  cmd.AddValue ("simulationId", "The simulation's index (for logging purposes)", simulationId);
-  cmd.AddValue ("adaptationAlgo", "The adaptation algorithm that the client uses for the simulation", adaptationAlgo);
-  cmd.AddValue ("transportProtocol", "The transport protocol used for streaming (QUIC or TCP)", transportProtocol);
-  cmd.AddValue ("dataRate", "The data rate of the link connecting the client and server. E.g. 1Mbps", dataRate);
-  cmd.AddValue ("pacingEnabled", "true if pacing should be enabled. If enabled, pacing rate equals data rate.", pacingEnabled);
-  cmd.AddValue ("errorRate", "The percentage of packets that should be lost, expressed as a double where 1 == 100%", errorRate);
+  // cmd.AddValue ("simulationId", "The simulation's index (for logging purposes)", simulationId);
+  // cmd.AddValue ("adaptationAlgo", "The adaptation algorithm that the client uses for the simulation", adaptationAlgo);
+  // cmd.AddValue ("transportProtocol", "The transport protocol used for streaming (QUIC or TCP)", transportProtocol);
+  // cmd.AddValue ("dataRate", "The data rate of the link connecting the client and server. E.g. 1Mbps", dataRate);
+  // cmd.AddValue ("pacingEnabled", "true if pacing should be enabled. If enabled, pacing rate equals data rate.", pacingEnabled);
+  // cmd.AddValue ("errorRate", "The percentage of packets that should be lost, expressed as a double where 1 == 100%", errorRate);
 
   cmd.Parse (argc, argv);
 
@@ -206,6 +207,7 @@ main (int argc, char *argv[])
   clientApps.Get(0)->SetStartTime(Seconds(2)); // Only have one client application to start 
 
   NS_LOG_INFO ("Run Simulation. (" << "id: " << simulationId << ")");
+  Simulator::Stop(Seconds(73.2));
   Simulator::Run ();
   Simulator::Destroy ();
   NS_LOG_INFO ("Simulation Complete.");
